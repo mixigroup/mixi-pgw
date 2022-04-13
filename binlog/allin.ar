@@ -1,0 +1,12 @@
+CREATE libbinlog.a
+ADDLIB libbinlog.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/libbinlogevents/lib/libbinlogevents.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/archive_output_directory/libjson_binlog_static.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/archive_output_directory/libmysqlclient.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/archive_output_directory/libmysys.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/archive_output_directory/libkeyring_common.a
+ADDLIB ~/git/mixi-pgw/deps/mysql-8.0.28/_build/client/base/libclient_base.a
+SAVE
+END
+
+

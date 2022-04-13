@@ -1,0 +1,21 @@
++ cat /etc/nginx/nginx.conf
+
+user www-data;
+worker_processes 4;
+worker_cpu_affinity 10000000000000 1000000000000 100000000000 10000000000;
+pid /run/nginx.pid;
+
+events {
+}
+stream {
+    upstream gtpc_upstreams {
+        server 172.23.1.1:2123;
+        server 172.23.1.1:2124 backup;
+    }
+    server {
+        listen 222.13.192.222:2123 udp;
+        proxy_pass gtpc_upstreams;
+        proxy_responses 1;
+        proxy_timeout 1s;
+    }
+}

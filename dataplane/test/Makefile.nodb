@@ -1,0 +1,104 @@
+MOD_ENCAP = t_encap
+MOD_PERF  = t_perf
+
+LTEEPCLIBDIR=/usr/local/lib/
+DPDKPATH=$(RTE_SDK)/$(RTE_TARGET)
+CXXFLAGS = -I$(DPDKPATH)/include -include $(DPDKPATH)/include/rte_config.h -mssse3 -I./
+CXXFLAGS += -D__DEBUG__ -I../inc/
+
+##CXXFLAGS += -fPIE
+PDIR=$(shell pwd)
+
+ifeq ($(MANYCORE),1)
+	__MANYCORE__ = 1
+endif
+
+ifdef CANNOT_USE_GRE
+CXXFLAGS += -D__CANNOT_USE_GRE__
+endif
+
+LIBS = \
+    -static-libgcc -m64 -pthread -march=native \
+    -Wl,--no-as-needed \
+    -L$(DPDKPATH)/lib \
+    -L$(LTEEPCLIBDIR) \
+    -lpthread -ldl -lrt -lm -lpcap -lnuma \
+    -Wl,--whole-archive \
+    -Wl,--start-group \
+    -ldpdk \
+    -Wl,--end-group \
+    -Wl,--no-whole-archive
+
+MOD = basic_test
+
+ifeq ($(TEST),2)
+	SRCS +=  ./ut_encap.cc
+	MOD = t_encap
+else ifeq ($(TEST),3)
+	SRCS +=  ./ut_gtpu_2_gre.cc
+	MOD = t_gtpu2gre
+else ifeq ($(TEST),4)
+	SRCS +=  ./ut_greterm.cc
+	MOD = t_greterm
+else ifeq ($(TEST),17)
+	SRCS +=  ./ut_limitpps.cc
+	MOD = t_limitpps
+else ifeq ($(TEST),18)
+	SRCS +=  ./ut_greterm_v6.cc
+	MOD = t_greterm_v6
+else ifeq ($(TEST),19)
+	SRCS +=  ./ut_template.cc
+	MOD = t_template
+	LIBS += -lgtest -lgtest_main
+else ifeq ($(TEST),20)
+	SRCS +=  ../src/app/app.cc ../src/conf/static_conf.cc
+	SRCS +=  ./ut_loadcfg.cc
+	MOD = t_loadcfg
+	LIBS += -lgtest -lgtest_main
+	CXXFLAGS += -DARCH=99 -D__TEST_MODE__
+else ifeq ($(TEST),102)
+    SRCS +=  ./ut_encap_g.cc
+    MOD = t_encap_g
+    LIBS += -lgtest -lgtest_main
+else ifeq ($(TEST),103)
+    SRCS +=  ./ut_gtpu_2_gre_g.cc
+    MOD = t_gtpu2gre_g
+    LIBS += -lgtest -lgtest_main
+else ifeq ($(TEST),104)
+    SRCS +=  ./ut_greterm_g.cc
+    MOD = t_greterm_g
+    LIBS += -lgtest -lgtest_main
+else ifeq ($(TEST),117)
+    SRCS +=  ./ut_limitpps_g.cc
+    MOD = t_limitpps_g
+    LIBS += -lgtest -lgtest_main
+
+else
+	$(error error is $(TEST))
+endif
+
+## test target soruces.
+SRCS +=  ../src/core/cores.cc
+SRCS +=  ../src/core/core_encap_worker.cc
+SRCS +=  ../src/core/core_gtpu2gre_worker.cc
+SRCS +=  ../src/core/core_greterm_worker.cc
+SRCS +=  ../src/core/core_counter_worker.cc
+SRCS +=  ../src/core/core_transfer_worker.cc
+SRCS +=  ../src/core/core_rx_distributor.cc
+
+SRCS +=  ../src/core/core_tapbase.cc
+SRCS +=  ../src/core/core_taprx.cc
+SRCS +=  ../src/core/core_taptx.cc
+
+CXXFLAGS += -O0 -g
+
+CXX = g++
+OBJS = $(SRCS:.cc=.o)
+all: $(MOD)
+
+$(MOD):$(OBJS)
+	$(CXX) -o $(MOD) $(CXXFLAGS) $(SRCS) $(LIBS) 
+	chmod u+x ./$(MOD)
+clean:
+	rm -f ./$(MOD)
+	rm -f ./*.o
