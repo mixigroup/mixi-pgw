@@ -1,0 +1,31 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+SET(PRJ mixi-pgw-lookup)
+PROJECT(${PRJ})
+
+
+FIND_LIBRARY(LOG4CPP_LIBRARY_PATH NAMES log4cpp PATHS "/usr/local/lib/")
+INCLUDE(FindPkgConfig)
+INCLUDE_DIRECTORIES("../../deps/netmap/sys")
+INCLUDE_DIRECTORIES("/usr/local/include/")
+INCLUDE_DIRECTORIES(("../../inc"))
+INCLUDE_DIRECTORIES(("../.."))
+
+if (UNIX AND NOT APPLE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2 ")
+else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -g ")
+endif()
+
+## databases
+SET(SOURCE_FILES
+        ${SOURCE_FILES}
+        dual_buffered_lookup_table.cc
+        )
+
+ADD_LIBRARY(${PRJ} SHARED ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(${PRJ} pthread)
+TARGET_LINK_LIBRARIES(${PRJ} ${LOG4CPP_LIBRARY_PATH})
+TARGET_LINK_LIBRARIES(${PRJ} rt)
+
+INSTALL(TARGETS ${PRJ} LIBRARY DESTINATION lib)
+

@@ -1,0 +1,45 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+SET(PRJ mixi-pgw-db)
+PROJECT(${PRJ})
+
+
+SET(BOOST_ROOT "/usr/local/share/")
+FIND_PACKAGE(Boost COMPONENTS thread regex program_options system REQUIRED)
+FIND_LIBRARY(LOG4CPP_LIBRARY_PATH NAMES log4cpp PATHS "/usr/local/lib/")
+INCLUDE_DIRECTORIES("/usr/local/share/include/")
+INCLUDE_DIRECTORIES("../../deps/netmap/sys")
+INCLUDE_DIRECTORIES("/usr/local/include/")
+INCLUDE_DIRECTORIES(("../../inc"))
+
+
+# INCLUDE(FindPkgConfig)
+# PKG_CHECK_MODULES(LIBMYSQLCLIENT REQUIRED mysqlclient)
+# INCLUDE_DIRECTORIES(${LIBMYSQLCLIENT_INCLUDE_DIRS})
+# LINK_DIRECTORIES(${LIBMYSQLCLIENT_LIBRARY_DIRS})
+
+if (UNIX AND NOT APPLE)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2 ")
+else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -g ")
+endif()
+## databases
+SET(SOURCE_FILES
+        rec.cc
+        con.cc
+        bind.cc
+        stmt.cc
+        cfg.cc
+        )
+ADD_LIBRARY(${PRJ} SHARED ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(${PRJ} pthread)
+TARGET_LINK_LIBRARIES(${PRJ} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PRJ} ${LOG4CPP_LIBRARY_PATH})
+TARGET_LINK_LIBRARIES(${PRJ} mixi-pgw-misc)
+TARGET_LINK_LIBRARIES(${PRJ} mysqlclient)
+
+if (UNIX AND NOT APPLE)
+    TARGET_LINK_LIBRARIES(${PRJ} rt)
+endif()
+
+INSTALL(TARGETS ${PRJ} LIBRARY DESTINATION lib)
+
